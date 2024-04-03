@@ -1,26 +1,28 @@
 #!/var/local/s3/venv/bin/python3
 
 import datetime
-import os, sys
-from pathlib import Path
-import pytz
-
-import boto3
-from boto3.s3.transfer import S3Transfer
-
-from loguru import logger
-
+import os
+import sys
 import threading
 
-logger.add("/var/local/s3/s3_log.log")
+import boto3
+import pytz
+from boto3.s3.transfer import S3Transfer
+from loguru import logger
 
-S3_BUCKET_NAME = "farm-backups"
-S3_DIRNAME = "vm"
+PW = os.getcwd()
+
+
+S3_BUCKET_NAME = os.getenv("BUCKET_NAME")
+S3_DIR_NAME = os.getenv("S3_DIR_NAME")
+
+BACKUP_DIRECTORY = os.getenv("BACKUP_DIRECTORY")
+BACKUP_ENC_DIRECTORY = os.getenv("BACKUP_ENC_DIRECTORY")
+
+BackupFilenameList = os.listdir(BACKUP_DIRECTORY)
 TIME_ZONE = os.getenv("TIME_ZONE", "Asia/Tomsk")
 
-BACKUP_DIRECTORY = "/zPool/zDir/dump"
-BACKUP_ENC_DIRECTORY = "/zPool/zDir/dump/enc"
-BACKUP_FILENAME_LIST = os.listdir(BACKUP_DIRECTORY)
+logger.add(f"{PW}/s3_log.log")
 
 
 def get_current_date_str():
@@ -90,7 +92,7 @@ if __name__ == "__main__":
 
             logger.info(f"START PROGRAM - {datetime.datetime.now(pytz.timezone(TIME_ZONE))}")
             current_date = get_current_date_str()
-            for FileName in BACKUP_FILENAME_LIST:
+            for FileName in BackupFilenameList:
                 if str(current_date) in FileName and not FileName.endwith(".log"):
                     logger.info(f"START WORK {FileName} - {datetime.datetime.now(pytz.timezone(TIME_ZONE))}")
                     # print(f"""{BACKUP_DIRECTORY + FileName}""")
